@@ -1,45 +1,76 @@
+var _ = require('underscore');
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 var styles = require('./styles.js');
+var twitterService = require('./twitter/twitterService.js');
 
-
-var MainComponent = React.createClass({
+var FormComponent = React.createClass({
+    getInitialState: function() {
+        var initState = {};
+        _.each(this.props.fields, function(field, i){
+            initState[field.param] = field.value;
+        });
+        return initState;
+    },
+    handleFieldChange: function(fieldId, val) {
+        var newState = {};
+        newState[fieldId] = val;
+        this.setState(newState);
+    },
+    handleKeyDown: function(event) {
+        if (event.keyCode === 13) {
+            this.doSearch();
+        }
+    },
+    doSearch: function() {
+        twitterService.search(this.state);
+    },
     render: function() {
+        var inputFields = _.map(this.props.fields, function(field, i) {
+            return <InputField onChange={this.handleFieldChange} key={i} param={field.param} id={field.id} type={field.type} initval={field.value} />
+        }, this);
         return (
-            <p style={styles.p}>
-            <InputComponent initval="Hiiiiii" /><br />
-            <img src="static/img/Bunny-Typing.gif" />
-            </p>
+            <form onSubmit={this.doSearch} onKeyDown={this.handleKeyDown}>
+                {inputFields}
+            </form>
         );
     }
 });
 
-var InputComponent = React.createClass({
+var InputField = React.createClass({
     getInitialState: function() {
         return {
-            value: this.props.initval,
-            windowWidth: window.innerWidth
+            value: this.props.initval
         };
     },
     handleChange: function(event) {
         this.setState({value: event.target.value});
-    },
-    handleResize: function(e) {
-        this.setState({windowWidth: window.innerWidth});
-    },
-    componentDidMount: function() {
-        window.addEventListener('resize', this.handleResize);
-    },
-    componentWillUnmount: function() {
-        window.removeEventListener('resize', this.handleResize);
+        this.props.onChange(this.props.param, event.target.value);
     },
     render: function() {
         var value = this.state.value;
-        return <span><input type="text" value={value} onChange={this.handleChange} />width is {this.state.windowWidth}</span>
+        var type = this.props.type;
+        return <input type={type} value={value} onChange={this.handleChange} />
     }
 });
 
+var formFields = [
+    {
+        id: 'Query',
+        param: 'q',
+        type: 'text',
+        value: 'Santa'
+    },
+    {
+        id: 'Count',
+        param: 'count',
+        type: 'number',
+        value: '5'
+    }
+];
+
 ReactDOM.render(
-    <MainComponent />,
+    <FormComponent fields={formFields} />,
     document.getElementById('main')
 );

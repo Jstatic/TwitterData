@@ -18,11 +18,11 @@ gulp.task('browserify', function () {
     b.transform(reactify);
     return b.bundle()
         .pipe(source('bundle.js'))
-        .pipe(gulp.dest('static'));
+        .pipe(gulp.dest('public/static'));
 });
 
 gulp.task('cleanfiles', function() {
-    return del('static/img/**.*');
+    return del('public/static/img/**.*');
 });
 gulp.task('copyfiles', ['cleanfiles'], function() {
     return gulp.src(paths.images)

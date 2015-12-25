@@ -1,3 +1,4 @@
 .DS_Store
+twitterKeys.js
 node_modules/
-static/
+public/static/

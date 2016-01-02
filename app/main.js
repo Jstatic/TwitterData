@@ -58,13 +58,16 @@ var InputField = React.createClass({
 var tweetData;
 
 var TweetStream = React.createClass({
+    getInitialState: function() {
+        return {tweets: 'Fetching Tweets'};
+    },
     componentDidMount: function(){
-        twitterService.streamTweets();
+        //this.setState({tweets: twitterService.streamTweets()});
     },
     render: function() {
         return (
             <p>
-
+                {this.state.tweets}
             </p>
         );
     }

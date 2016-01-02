@@ -37,7 +37,7 @@ app.get('/stream', function(req, res) {
 });
 
 io.on('connection', function(socket){
-    client.stream('statuses/filter', {track: 'twitter'}, function(stream) {
+    client.stream('statuses/filter', {track: 'poop'}, function(stream) {
     stream.on('data', function(tweet) {
       socket.emit('tweets', tweet.text);
     });

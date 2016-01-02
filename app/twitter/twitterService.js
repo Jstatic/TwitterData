@@ -5,6 +5,9 @@ var io = require('socket.io-client');
 var socket = io.connect();
 
 module.exports = {
+    constructor: function() {
+        this.tweet = 'Fetching Tweets';
+    },
     search: function(query) {
         var queries = [];
         var index = 0;
@@ -28,13 +31,10 @@ module.exports = {
         });
     },
     streamTweets: function() {
+        console.log('start');
         socket.on('tweets', function(data){
             console.log(data);
+            return data;
         });
-        /*
-        socket.on('stream?q=twitter', function(data){
-            console.log(data);
-        });
-        */
     }
 };

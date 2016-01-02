@@ -1,6 +1,8 @@
 var express = require('express');
 var port = process.env.PORT || 3000;
 var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 var Twitter = require('twitter');
 var twitterKeys = require('./twitterKeys');
 
@@ -23,8 +25,8 @@ app.get('/tweets', function(req, res) {
 });
 
 app.get('/stream', function(req, res) {
-  var params = req.query.q;
-  client.stream('statuses/filter', {track: params}, function(stream) {
+  // var params = req.query.q;
+  client.stream('statuses/filter', {track: 'twitter'}, function(stream) {
     stream.on('data', function(tweet) {
       res.write('\n' + tweet.text);
     });
@@ -34,8 +36,19 @@ app.get('/stream', function(req, res) {
   });
 });
 
+io.on('connection', function(socket){
+    client.stream('statuses/filter', {track: 'twitter'}, function(stream) {
+    stream.on('data', function(tweet) {
+      socket.emit('tweets', tweet.text);
+    });
+    stream.on('error', function(error) {
+      console.log(error);
+    });
+  });
+});
+
 app.use(express.static('public'));
 
-app.listen(port, function() {
+server.listen(port, function() {
     console.log("Listening on port " + port);
 });

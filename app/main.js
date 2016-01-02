@@ -55,6 +55,21 @@ var InputField = React.createClass({
     }
 });
 
+var tweetData;
+
+var TweetStream = React.createClass({
+    componentDidMount: function(){
+        twitterService.streamTweets();
+    },
+    render: function() {
+        return (
+            <p>
+
+            </p>
+        );
+    }
+});
+
 var formFields = [
     {
         id: 'Query',
@@ -73,4 +88,9 @@ var formFields = [
 ReactDOM.render(
     <FormComponent fields={formFields} />,
     document.getElementById('main')
+);
+
+ReactDOM.render(
+    <TweetStream />,
+    document.getElementById('data')
 );

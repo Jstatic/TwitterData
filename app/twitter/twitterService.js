@@ -1,5 +1,8 @@
 var _ = require('underscore');
 var $ = require('jquery');
+var io = require('socket.io-client');
+
+var socket = io.connect();
 
 module.exports = {
     search: function(query) {
@@ -23,5 +26,15 @@ module.exports = {
             console.log(data);
             console.log(resultGeos);
         });
+    },
+    streamTweets: function() {
+        socket.on('tweets', function(data){
+            console.log(data);
+        });
+        /*
+        socket.on('stream?q=twitter', function(data){
+            console.log(data);
+        });
+        */
     }
 };

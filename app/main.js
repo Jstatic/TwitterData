@@ -1,34 +1,72 @@
-var _ = require('underscore');
+let _ = require('underscore');
+let React = require('react');
+let ReactDOM = require('react-dom');
+let styles = require('./styles.js');
+import twitterService from './twitter/twitterService.js';
+let Twitter = new twitterService;
 
-var React = require('react');
-var ReactDOM = require('react-dom');
-var styles = require('./styles.js');
-var twitterService = require('./twitter/twitterService.js');
+let theseTweets = ['Get Tweets'];
+let formFields = [
+    {
+        id: 'Search Query',
+        param: 'q',
+        type: 'text',
+        value: 'Poop'
+    },
+    {
+        id: 'Result Type',
+        param: 'result_type',
+        type: 'text',
+        value: 'recent'
+    }
+];
 
-var FormComponent = React.createClass({
-    getInitialState: function() {
-        var initState = {};
+const FormComponent = React.createClass({
+    getInitialState() {
+        let initState = {};
         _.each(this.props.fields, function(field, i){
-            initState[field.param] = field.value;
+            initState[field.id] = {
+                param: field.param,
+                value: field.value
+            };
         });
         return initState;
     },
-    handleFieldChange: function(fieldId, val) {
-        var newState = {};
-        newState[fieldId] = val;
+    handleFieldChange(props, val) {
+        let newState = {};
+        newState[props.id] = {
+            param: props.param,
+            value: val
+        }
         this.setState(newState);
     },
-    handleKeyDown: function(event) {
+    handleKeyDown(event) {
         if (event.keyCode === 13) {
+            event.preventDefault();
             this.doSearch();
         }
     },
-    doSearch: function() {
-        twitterService.search(this.state);
+    doSearch() {
+        Twitter.search(this.state).then((result) => {
+            theseTweets = [];
+            _.map(result.statuses, (status) => {
+                theseTweets.push(status.text);
+            });
+            renderTweetStream();
+        });
     },
     render: function() {
-        var inputFields = _.map(this.props.fields, function(field, i) {
-            return <InputField onChange={this.handleFieldChange} key={i} param={field.param} id={field.id} type={field.type} initval={field.value} />
+        let inputFields = _.map(this.props.fields, function(field, i) {
+            return <p>
+                <label>{field.id}</label>
+                <InputField
+                    onChange={this.handleFieldChange}
+                    key={i}
+                    param={field.param}
+                    id={field.id}
+                    type={field.type}
+                    initval={field.value} />
+            </p>
         }, this);
         return (
             <form onSubmit={this.doSearch} onKeyDown={this.handleKeyDown}>
@@ -38,62 +76,46 @@ var FormComponent = React.createClass({
     }
 });
 
-var InputField = React.createClass({
-    getInitialState: function() {
+const InputField = React.createClass({
+    getInitialState() {
         return {
             value: this.props.initval
         };
     },
-    handleChange: function(event) {
+    handleChange(event) {
         this.setState({value: event.target.value});
-        this.props.onChange(this.props.param, event.target.value);
+        this.props.onChange(this.props, event.target.value);
     },
-    render: function() {
-        var value = this.state.value;
-        var type = this.props.type;
+    render() {
+        let value = this.state.value;
+        let type = this.props.type;
         return <input type={type} value={value} onChange={this.handleChange} />
     }
 });
 
-var tweetData;
-
-var TweetStream = React.createClass({
-    getInitialState: function() {
-        return {tweets: 'Fetching Tweets'};
-    },
-    componentDidMount: function(){
-        //this.setState({tweets: twitterService.streamTweets()});
-    },
-    render: function() {
+const TweetStream = React.createClass({
+    render() {
+        let lineItems = [];
+        for (let value of this.props.tweets) {
+            lineItems.push(<li>{value}</li>);
+        }
         return (
-            <p>
-                {this.state.tweets}
-            </p>
+            <ul className="tweet-stream">
+            {lineItems}
+            </ul>
         );
     }
 });
-
-var formFields = [
-    {
-        id: 'Query',
-        param: 'q',
-        type: 'text',
-        value: 'Santa'
-    },
-    {
-        id: 'Count',
-        param: 'count',
-        type: 'number',
-        value: '5'
-    }
-];
 
 ReactDOM.render(
     <FormComponent fields={formFields} />,
     document.getElementById('main')
 );
 
-ReactDOM.render(
-    <TweetStream />,
-    document.getElementById('data')
-);
+const renderTweetStream = () => {
+    ReactDOM.render(
+        <TweetStream tweets={theseTweets} />,
+        document.getElementById('data')
+    );
+}
+renderTweetStream();

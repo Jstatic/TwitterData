@@ -20,31 +20,25 @@ app.get('/tweets', function(req, res) {
       if (!error) {
           res.json(tweets);
           res.end();
+      } else if (error) {
+        console.log(error);
       }
   });
 });
 
-app.get('/stream', function(req, res) {
-  // var params = req.query.q;
-  client.stream('statuses/filter', {track: 'twitter'}, function(stream) {
-    stream.on('data', function(tweet) {
-      res.write('\n' + tweet.text);
-    });
-    stream.on('error', function(error) {
-      console.log(error);
-    });
-  });
-});
-
 io.on('connection', function(socket){
-    client.stream('statuses/filter', {track: 'poop'}, function(stream) {
-    stream.on('data', function(tweet) {
-      socket.emit('tweets', tweet.text);
+    socket.on('get stream', function(data){
+      console.log(data);
+      client.stream('statuses/filter', {track: data}, function(stream) {
+        stream.on('data', function(tweet) {
+          socket.emit('tweets', tweet);
+        });
+        stream.on('error', function(error) {
+          console.log(error);
+        });
+      });
+
     });
-    stream.on('error', function(error) {
-      console.log(error);
-    });
-  });
 });
 
 app.use(express.static('public'));
